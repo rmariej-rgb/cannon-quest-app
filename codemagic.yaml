@@ -85,11 +85,12 @@ workflows:
       - name: Set up code signing
         script: |
           xcode-project use-profiles
-      - name: Archive app
+      - name: Archive and export app
         script: |
           set -e
           set -o pipefail
           set -x
+
           mkdir -p build/ios/xcarchive
           xcodebuild archive \
             -workspace "$XCODE_WORKSPACE" \
@@ -99,18 +100,15 @@ workflows:
             COMPILER_INDEX_STORE_ENABLE=NO \
             CODE_SIGN_STYLE=Manual \
             2>&1 | tee /tmp/xcodebuild_archive_full.log
-          echo "----- LAST 100 LINES -----"
-          tail -100 /tmp/xcodebuild_archive_full.log
-      - name: Export ipa
-        script: |
-          set -e
-          set -o pipefail
-          set -x
-          echo "----- BEFORE PATCH -----"
+          echo "----- ARCHIVE LAST 50 LINES -----"
+          tail -50 /tmp/xcodebuild_archive_full.log
+
+          echo "----- KEYCHAIN STATE CHECK -----"
+          security list-keychains
+          security find-identity -v -p codesigning || true
+
+          echo "----- EXPORT OPTIONS PLIST -----"
           /usr/libexec/PlistBuddy -c "Print :signingCertificate" "$HOME/export_options.plist" || true
-          /usr/libexec/PlistBuddy -c "Set :signingCertificate 'Apple Distribution'" "$HOME/export_options.plist"
-          echo "----- AFTER PATCH -----"
-          /usr/libexec/PlistBuddy -c "Print :signingCertificate" "$HOME/export_options.plist"
 
           mkdir -p build/ios/ipa
           xcodebuild -exportArchive \
@@ -118,11 +116,12 @@ workflows:
             -exportPath build/ios/ipa \
             -exportOptionsPlist "$HOME/export_options.plist" \
             2>&1 | tee /tmp/xcodebuild_export_full.log
-          echo "----- LAST 100 LINES -----"
+          echo "----- EXPORT LAST 100 LINES -----"
           tail -100 /tmp/xcodebuild_export_full.log
+
           echo "----- VERIFYING IPA WAS PRODUCED -----"
           ls -la build/ios/ipa/
-          test -f build/ios/ipa/*.ipa 2>/dev/null || find build/ios/ipa -name "*.ipa" | grep -q . || (echo "ERROR: no .ipa file found in build/ios/ipa/" && exit 1)
+          find build/ios/ipa -name "*.ipa" | grep -q . || (echo "ERROR: no .ipa file found in build/ios/ipa/" && exit 1)
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
