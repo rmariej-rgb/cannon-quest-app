@@ -53,7 +53,7 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m2
     integrations:
-      app_store_connect: codemagic   # <-- rename to match your integration's name
+      app_store_connect: Personal
     environment:
       groups:
         - ios_signing   # create this group in Codemagic UI (App Store Connect API key)
