@@ -106,6 +106,12 @@ workflows:
           set -e
           set -o pipefail
           set -x
+          echo "----- BEFORE PATCH -----"
+          /usr/libexec/PlistBuddy -c "Print :signingCertificate" "$HOME/export_options.plist" || true
+          /usr/libexec/PlistBuddy -c "Set :signingCertificate 'Apple Distribution'" "$HOME/export_options.plist"
+          echo "----- AFTER PATCH -----"
+          /usr/libexec/PlistBuddy -c "Print :signingCertificate" "$HOME/export_options.plist"
+
           mkdir -p build/ios/ipa
           xcodebuild -exportArchive \
             -archivePath build/ios/xcarchive/App.xcarchive \
