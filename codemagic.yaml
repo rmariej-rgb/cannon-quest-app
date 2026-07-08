@@ -85,29 +85,36 @@ workflows:
       - name: Set up code signing
         script: |
           xcode-project use-profiles
-      - name: DIAGNOSTIC - raw archive with full output
+      - name: Archive app
         script: |
           set -x
-          mkdir -p /tmp/diag
+          mkdir -p build/ios/xcarchive
           xcodebuild archive \
             -workspace "$XCODE_WORKSPACE" \
             -scheme "$XCODE_SCHEME" \
-            -archivePath /tmp/diag/App.xcarchive \
+            -archivePath build/ios/xcarchive/App.xcarchive \
             -destination "generic/platform=iOS" \
             COMPILER_INDEX_STORE_ENABLE=NO \
             CODE_SIGN_STYLE=Manual \
-            > /tmp/diag/full_archive_output.log 2>&1 || true
-          echo "----- LAST 150 LINES OF RAW XCODEBUILD OUTPUT -----"
-          tail -150 /tmp/diag/full_archive_output.log
-      - name: Build ipa for distribution
+            2>&1 | tee /tmp/xcodebuild_archive_full.log
+          echo "----- LAST 100 LINES -----"
+          tail -100 /tmp/xcodebuild_archive_full.log
+      - name: Export ipa
         script: |
-          xcode-project build-ipa \
-            --workspace "$XCODE_WORKSPACE" \
-            --scheme "$XCODE_SCHEME"
+          set -x
+          mkdir -p build/ios/ipa
+          xcodebuild -exportArchive \
+            -archivePath build/ios/xcarchive/App.xcarchive \
+            -exportPath build/ios/ipa \
+            -exportOptionsPlist "$HOME/export_options.plist" \
+            2>&1 | tee /tmp/xcodebuild_export_full.log
+          echo "----- LAST 100 LINES -----"
+          tail -100 /tmp/xcodebuild_export_full.log
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
-      - /tmp/diag/full_archive_output.log
+      - /tmp/xcodebuild_archive_full.log
+      - /tmp/xcodebuild_export_full.log
     publishing:
       app_store_connect:
         auth: integration
