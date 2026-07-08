@@ -87,6 +87,8 @@ workflows:
           xcode-project use-profiles
       - name: Archive app
         script: |
+          set -e
+          set -o pipefail
           set -x
           mkdir -p build/ios/xcarchive
           xcodebuild archive \
@@ -101,6 +103,8 @@ workflows:
           tail -100 /tmp/xcodebuild_archive_full.log
       - name: Export ipa
         script: |
+          set -e
+          set -o pipefail
           set -x
           mkdir -p build/ios/ipa
           xcodebuild -exportArchive \
@@ -110,6 +114,9 @@ workflows:
             2>&1 | tee /tmp/xcodebuild_export_full.log
           echo "----- LAST 100 LINES -----"
           tail -100 /tmp/xcodebuild_export_full.log
+          echo "----- VERIFYING IPA WAS PRODUCED -----"
+          ls -la build/ios/ipa/
+          test -f build/ios/ipa/*.ipa 2>/dev/null || find build/ios/ipa -name "*.ipa" | grep -q . || (echo "ERROR: no .ipa file found in build/ios/ipa/" && exit 1)
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
