@@ -956,13 +956,17 @@ export default function CanonQuest(){
             {status==="done" && <>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4,flexWrap:"wrap",gap:6}}>
                 <div className="cq-eyebrow" style={{color:"#8a6a1f"}}>Finished {rec.finished||""} — well read.</div>
-                <button className="cq-btn sm ghost" style={{fontSize:11,padding:"4px 10px",borderColor:"rgba(60,50,30,.3)",color:"#8a6a1f"}}
-                  onClick={()=>unfinishBook(b.id)}>↩ Still reading</button>
+                <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                  <button className="cq-btn sm ghost" style={{fontSize:11,padding:"4px 10px",borderColor:"rgba(60,50,30,.3)",color:"#8a6a1f"}}
+                    onClick={()=>unfinishBook(b.id)}>↩ Still reading</button>
+                  <button className="cq-btn sm ghost" style={{fontSize:11,padding:"4px 10px",borderColor:"rgba(60,50,30,.3)",color:"#8a6a1f"}}
+                    onClick={()=>{ if(window.confirm("Reset this book to not started? Your notes, rating, and reflection will be cleared.")) unstartBook(b.id); }}>↩ Not started</button>
+                </div>
               </div>
               <div className="starrow" style={{margin:"6px 0 4px"}} role="radiogroup" aria-label="Your rating">
                 {[1,2,3,4,5].map(n=><button key={n} className={rec.rating>=n?"on":""} aria-label={`${n} stars`}
                   onClick={()=>saveField(b.id,"rating",n)}>★</button>)}
-                <span className="cq-mono" style={{fontSize:10.5,color:"#5d5342",alignSelf:"center",marginLeft:6}}>{rec.rating?`${rec.rating}/5`:"rate it"}</span>
+                <span className="cq-mono" style={{fontSize:10.5,color:"#5d5342",alignSelf:"center",marginLeft:6}}>{rec.rating?`${rec.rating}/5`:"← tap to rate"}</span>
               </div>
               <div className="cq-eyebrow" style={{color:"#8a6a1f",margin:"10px 0 4px"}}>Reflection — what did this book change about how you see the world?</div>
               <textarea className="cq-input" rows="4" defaultValue={rec.reflection||""} key={`rf-${b.id}`}
