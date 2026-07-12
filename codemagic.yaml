@@ -82,6 +82,9 @@ workflows:
           app-store-connect fetch-signing-files "com.rachelle.canonquest" \
             --type IOS_APP_STORE \
             --create
+      - name: Add certificates to keychain
+        script: |
+          keychain add-certificates
       - name: Set up code signing
         script: |
           xcode-project use-profiles
@@ -99,6 +102,7 @@ workflows:
             -destination "generic/platform=iOS" \
             COMPILER_INDEX_STORE_ENABLE=NO \
             CODE_SIGN_STYLE=Manual \
+            CURRENT_PROJECT_VERSION=$BUILD_NUMBER \
             2>&1 | tee /tmp/xcodebuild_archive_full.log
           echo "----- ARCHIVE LAST 50 LINES -----"
           tail -50 /tmp/xcodebuild_archive_full.log
