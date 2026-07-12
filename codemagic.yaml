@@ -38,11 +38,12 @@ workflows:
     artifacts:
       - build/sim/Build/Products/**/*.app
       - /tmp/xcodebuild_logs/*.log
+
   # ---------------------------------------------------------------
   # REAL workflow — switch to this once your Apple Developer account
   # is approved AND you've created an "app_store_connect" integration
   # in Codemagic (Team settings -> Integrations -> App Store Connect).
-  # Replace the name below ("Personal") with whatever you named that
+  # Replace the name below ("codemagic") with whatever you named that
   # integration. Then either rename this workflow to
   # "ios-canon-quest-simulator" (delete the block above) or just start
   # a build on this workflow specifically from the Codemagic dashboard.
@@ -81,7 +82,6 @@ workflows:
           app-store-connect fetch-signing-files "com.rachelle.canonquest" \
             --type IOS_APP_STORE \
             --create
-          keychain add-certificates
       - name: Set up code signing
         script: |
           xcode-project use-profiles
@@ -90,6 +90,7 @@ workflows:
           set -e
           set -o pipefail
           set -x
+
           mkdir -p build/ios/xcarchive
           xcodebuild archive \
             -workspace "$XCODE_WORKSPACE" \
@@ -101,11 +102,14 @@ workflows:
             2>&1 | tee /tmp/xcodebuild_archive_full.log
           echo "----- ARCHIVE LAST 50 LINES -----"
           tail -50 /tmp/xcodebuild_archive_full.log
+
           echo "----- KEYCHAIN STATE CHECK -----"
           security list-keychains
           security find-identity -v -p codesigning || true
+
           echo "----- EXPORT OPTIONS PLIST -----"
           /usr/libexec/PlistBuddy -c "Print :signingCertificate" "$HOME/export_options.plist" || true
+
           mkdir -p build/ios/ipa
           xcodebuild -exportArchive \
             -archivePath build/ios/xcarchive/App.xcarchive \
@@ -114,6 +118,7 @@ workflows:
             2>&1 | tee /tmp/xcodebuild_export_full.log
           echo "----- EXPORT LAST 100 LINES -----"
           tail -100 /tmp/xcodebuild_export_full.log
+
           echo "----- VERIFYING IPA WAS PRODUCED -----"
           ls -la build/ios/ipa/
           find build/ios/ipa -name "*.ipa" | grep -q . || (echo "ERROR: no .ipa file found in build/ios/ipa/" && exit 1)
