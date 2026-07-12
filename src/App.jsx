@@ -325,13 +325,96 @@ function Dots({n,of=5,label}){
   return <span className="dots" title={label} aria-label={label}>{Array.from({length:of},(_,i)=><i key={i} className={i<n?"f":""}/>)}</span>;
 }
 
-/* ---------- SHARED UI ---------- */
+/* ---------- PROCEDURAL COVER SYSTEM ---------- */
+const ERA_PALETTES=[
+  {bg:"#1C1A2E",accent:"#7B6FA0",hi:"#C4B8E8"},   // ancient: deep violet
+  {bg:"#1A2A1A",accent:"#5A7A3A",hi:"#A8C878"},    // classical: forest green
+  {bg:"#2A1A0A",accent:"#8B5E2A",hi:"#D4A060"},    // medieval: burnt umber
+  {bg:"#0A1E2A",accent:"#2A6A8A",hi:"#70C0D8"},    // renaissance: teal
+  {bg:"#1E1A0A",accent:"#8A7020",hi:"#D4B840"},    // enlightenment: gold
+  {bg:"#1A0A0A",accent:"#8A2A2A",hi:"#D47070"},    // industrial: oxblood
+  {bg:"#0A1A1E",accent:"#1A6878",hi:"#60B8C8"},    // modern: steel blue
+];
+function eraFor(y){
+  if(y<-200) return 0;
+  if(y<400)  return 1;
+  if(y<1500) return 2;
+  if(y<1700) return 3;
+  if(y<1850) return 4;
+  if(y<1945) return 5;
+  return 6;
+}
+const MOTIF_KEYS=["bolt","orbit","helix","waves","compass","leaf","weave","flame","crown","rays",
+  "clash","scales","banner","lattice","columns","coin","scroll","mask","rings","eye","maze","fracture","hourglass","key"];
+const THEME_MOTIF={
+  freedom:"bolt",consciousness:"orbit",evolution:"helix",nature:"leaf",
+  astronomy:"orbit",knowledge:"compass",war:"clash",justice:"scales",
+  power:"crown",revolution:"flame",labor:"weave",morality:"scales",
+  virtue:"scales",markets:"coin",love:"rings",memory:"hourglass",
+  identity:"mask",fate:"hourglass",time:"hourglass",truth:"eye",
+  reason:"compass",myth:"crown",satire:"mask",physics:"orbit",
+  politics:"banner",society:"lattice",trauma:"fracture",mortality:"hourglass",
+  education:"key",meaning:"rays",simplicity:"waves",realism:"waves",
+  race:"clash",slavery:"clash",totalitarianism:"banner",
+  "the everyday":"leaf",the_absurd:"maze",alienation:"maze",
+};
+function motifFor(b){
+  for(const t of b.tg){ if(THEME_MOTIF[t]) return THEME_MOTIF[t]; }
+  return MOTIF_KEYS[(b.id*7)%MOTIF_KEYS.length];
+}
+function Motif({k,w,h,c}){
+  const x=w/2, y=h/2, s=Math.min(w,h)*0.38;
+  const p={stroke:c,strokeWidth:1.4,fill:"none",strokeLinecap:"round"};
+  switch(k){
+    case"bolt":    return <polyline points={`${x-s*.3},${y-s} ${x+s*.1},${y-.1*s} ${x-s*.15},${y+.05*s} ${x+s*.35},${y+s}`} {...p}/>;
+    case"orbit":   return <><ellipse cx={x} cy={y} rx={s} ry={s*.38} {...p}/><ellipse cx={x} cy={y} rx={s} ry={s*.38} transform={`rotate(60 ${x} ${y})`} {...p}/><ellipse cx={x} cy={y} rx={s} ry={s*.38} transform={`rotate(120 ${x} ${y})`} {...p}/><circle cx={x} cy={y} r={s*.12} fill={c}/></>;
+    case"helix":   return <><path d={`M${x-s},${y-s} C${x+s},${y-s} ${x-s},${y+s} ${x+s},${y+s}`} {...p}/><path d={`M${x+s},${y-s} C${x-s},${y-s} ${x+s},${y+s} ${x-s},${y+s}`} {...p} strokeOpacity={.55}/></>;
+    case"waves":   return <>{[-s*.5,-s*.15,s*.15,s*.5].map((dy,i)=><path key={i} d={`M${x-s},${y+dy} C${x-s*.4},${y+dy-s*.22} ${x+s*.4},${y+dy+s*.22} ${x+s},${y+dy}`} {...p} strokeOpacity={.4+i*.15}/>)}</>;
+    case"compass": return <><circle cx={x} cy={y} r={s} {...p}/><line x1={x} y1={y-s} x2={x} y2={y+s} {...p}/><line x1={x-s} y1={y} x2={x+s} y2={y} {...p}/><polygon points={`${x},${y-s*.55} ${x-s*.18},${y+s*.2} ${x},${y} ${x+s*.18},${y+s*.2}`} fill={c}/></>;
+    case"leaf":    return <><path d={`M${x},${y+s} C${x-s},${y} ${x-s},${y-s} ${x},${y-s} C${x+s},${y-s} ${x+s},${y} ${x},${y+s}`} {...p}/><line x1={x} y1={y+s} x2={x} y2={y-s} {...p}/></>;
+    case"weave":   return <>{[0,1,2,3].map(i=><><line key={`a${i}`} x1={x-s+i*s*.67} y1={y-s} x2={x-s+i*s*.67} y2={y+s} {...p} strokeOpacity={.7}/><line key={`b${i}`} x1={x-s} y1={y-s+i*s*.67} x2={x+s} y2={y-s+i*s*.67} {...p} strokeOpacity={.4}/></>)}</>;
+    case"flame":   return <path d={`M${x},${y+s} C${x-s*.5},${y} ${x-s*.3},${y-s*.4} ${x},${y-s} C${x+s*.2},${y-s*.5} ${x+s*.6},${y-s*.1} ${x+s*.4},${y+s*.3} C${x+s*.3},${y+s*.7} ${x},${y+s} ${x},${y+s}`} {...p}/>;
+    case"crown":   return <polyline points={`${x-s},${y+s*.3} ${x-s},${y-s*.3} ${x-s*.5},${y+s*.1} ${x},${y-s*.6} ${x+s*.5},${y+s*.1} ${x+s},${y-s*.3} ${x+s},${y+s*.3}`} {...p}/>;
+    case"rays":    return <>{[0,30,60,90,120,150].map(a=><line key={a} x1={x} y1={y} x2={x+Math.cos(a*Math.PI/180)*s} y2={y+Math.sin(a*Math.PI/180)*s} {...p} strokeOpacity={.5+.5*(a%60===0?1:0)}/>)}</>;
+    case"clash":   return <><line x1={x-s} y1={y-s} x2={x+s} y2={y+s} {...p}/><line x1={x+s} y1={y-s} x2={x-s} y2={y+s} {...p}/></>;
+    case"scales":  return <><line x1={x} y1={y-s} x2={x} y2={y+s*.3} {...p}/><line x1={x-s*.8} y1={y-.1*s} x2={x+s*.8} y2={y-.1*s} {...p}/><path d={`M${x-s*.8},${y-.1*s} l${-s*.35},${s*.5} h${s*.7} Z`} {...p}/><path d={`M${x+s*.8},${y-.1*s} l${-s*.35},${s*.5} h${s*.7} Z`} {...p}/></>;
+    case"banner":  return <><rect x={x-s} y={y-s*.5} width={s*2} height={s*.5} {...p}/><rect x={x-s} y={y} width={s*2} height={s*.5} {...p} strokeOpacity={.6}/><rect x={x-s} y={y+s*.5} width={s*2} height={s*.35} {...p} strokeOpacity={.35}/></>;
+    case"lattice": return <>{[-1,0,1].flatMap(i=>[-1,0,1].map(j=><circle key={`${i}${j}`} cx={x+i*s*.5} cy={y+j*s*.5} r={s*.1} fill={c} opacity={.7}/>))}{[[-s,0],[s,0],[0,-s],[0,s]].map(([dx,dy],i)=><line key={i} x1={x} y1={y} x2={x+dx*.8} y2={y+dy*.8} {...p} strokeOpacity={.4}/>)}</>;
+    case"columns": return <>{[-s*.5,-s*.17,s*.17,s*.5].map((dx,i)=><line key={i} x1={x+dx} y1={y-s} x2={x+dx} y2={y+s*.8} {...p}/>)}<line x1={x-s*.65} y1={y-s} x2={x+s*.65} y2={y-s} {...p}/><line x1={x-s*.65} y1={y+s*.8} x2={x+s*.65} y2={y+s*.8} {...p}/></>;
+    case"coin":    return <><circle cx={x} cy={y} r={s} {...p}/><circle cx={x} cy={y} r={s*.65} {...p} strokeOpacity={.6}/></>;
+    case"scroll":  return <><path d={`M${x-s*.3},${y-s} C${x-s*.7},${y-s} ${x-s*.7},${y+s} ${x-s*.3},${y+s} L${x+s*.3},${y+s} C${x+s*.7},${y+s} ${x+s*.7},${y-s} ${x+s*.3},${y-s} Z`} {...p}/>{[-s*.35,0,s*.35].map((dy,i)=><line key={i} x1={x-s*.4} y1={y+dy} x2={x+s*.4} y2={y+dy} {...p} strokeOpacity={.5}/>)}</>;
+    case"mask":    return <><path d={`M${x},${y-s} C${x-s*.8},${y-s} ${x-s*.9},${y+s*.2} ${x},${y+s*.4} C${x+s*.9},${y+s*.2} ${x+s*.8},${y-s} ${x},${y-s}`} {...p}/><ellipse cx={x-s*.3} cy={y-.1*s} rx={s*.18} ry={s*.12} {...p}/><ellipse cx={x+s*.3} cy={y-.1*s} rx={s*.18} ry={s*.12} {...p}/></>;
+    case"rings":   return <><circle cx={x-s*.25} cy={y} r={s*.55} {...p}/><circle cx={x+s*.25} cy={y} r={s*.55} {...p}/></>;
+    case"eye":     return <><path d={`M${x-s},${y} C${x-s*.5},${y-s*.6} ${x+s*.5},${y-s*.6} ${x+s},${y} C${x+s*.5},${y+s*.6} ${x-s*.5},${y+s*.6} ${x-s},${y}`} {...p}/><circle cx={x} cy={y} r={s*.28} {...p}/><circle cx={x} cy={y} r={s*.1} fill={c}/></>;
+    case"maze":    return <><rect x={x-s} y={y-s} width={s*2} height={s*2} {...p}/><polyline points={`${x-s*.5},${y-s} ${x-s*.5},${y-s*.3} ${x+s*.5},${y-s*.3} ${x+s*.5},${y+s*.3} ${x-s*.5},${y+s*.3} ${x-s*.5},${y+s}`} {...p} strokeOpacity={.7}/></>;
+    case"fracture":return <><line x1={x} y1={y-s} x2={x-s*.2} y2={y} {...p}/><line x1={x-s*.2} y1={y} x2={x+s*.3} y2={y+s*.4} {...p}/><line x1={x+s*.3} y1={y+s*.4} x2={x-s*.1} y2={y+s} {...p}/><line x1={x-s*.2} y1={y} x2={x-s*.6} y2={y+s*.8} {...p} strokeOpacity={.5}/></>;
+    case"hourglass":return <><polygon points={`${x-s*.7},${y-s} ${x+s*.7},${y-s} ${x},${y}`} {...p}/><polygon points={`${x-s*.7},${y+s} ${x+s*.7},${y+s} ${x},${y}`} {...p}/><line x1={x-s*.7} y1={y-s} x2={x-s*.7} y2={y+s} {...p} strokeOpacity={.35}/><line x1={x+s*.7} y1={y-s} x2={x+s*.7} y2={y+s} {...p} strokeOpacity={.35}/></>;
+    case"key":     return <><circle cx={x-s*.25} cy={y} r={s*.42} {...p}/><line x1={x+s*.17} y1={y} x2={x+s*.9} y2={y} {...p}/><line x1={x+s*.6} y1={y} x2={x+s*.6} y2={y+s*.28} {...p}/><line x1={x+s*.82} y1={y} x2={x+s*.82} y2={y+s*.2} {...p}/></>;
+    default:       return <circle cx={x} cy={y} r={s} {...p}/>;
+  }
+}
 function Cover({b,big}){
+  const w=big?92:64, h=big?136:94;
+  const era=ERA_PALETTES[eraFor(b.y)];
+  const motif=motifFor(b);
   return (
-    <div className="cover" style={{background:`linear-gradient(160deg,${GENRE_COLORS[b.g]},#1c1712 160%)`,width:big?92:64,minWidth:big?92:64,height:big?136:94}}>
-      <div className="ct" style={big?{fontSize:12}:null}>{b.t}</div>
-      <div className="ca">{b.a.split(" ").slice(-1)[0].toUpperCase()} · {fmtYear(b.y)}</div>
-    </div>);
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{borderRadius:"2px 5px 5px 2px",boxShadow:"3px 4px 10px rgba(0,0,0,.5)",flexShrink:0}}>
+      <defs>
+        <linearGradient id={`cg${b.id}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={era.bg}/>
+          <stop offset="1" stopColor="#0e1612"/>
+        </linearGradient>
+      </defs>
+      <rect width={w} height={h} fill={`url(#cg${b.id})`}/>
+      <rect x="4" y="0" width="1.5" height={h} fill="rgba(0,0,0,.35)"/>
+      <rect x="1" y="0" width="1" height={h} fill={era.accent} opacity=".4"/>
+      <g opacity=".18"><Motif k={motif} w={w} h={h} c={era.hi}/></g>
+      <Motif k={motif} w={w} h={h-h*.3} c={era.accent}/>
+      <rect x="0" y={h-20} width={w} height={20} fill="rgba(0,0,0,.45)"/>
+      <text x={w/2} y={h-6} textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize={big?6.5:5.5} fill={era.hi} opacity=".85" letterSpacing="0.5">
+        {b.y<0?`${Math.abs(b.y)} BC`:b.y} · {b.a.split(" ").slice(-1)[0].toUpperCase()}
+      </text>
+    </svg>);
 }
 
 function Toasts({items}){
@@ -452,6 +535,8 @@ export default function CanonQuest(){
     r.status="done"; r.pages=b.p; r.finished=r.finished||todayStr(); r.started=r.started||todayStr();
     give(n,g,"done",XP.done,`＋${XP.done} XP — finished “${b.t}”!`,r); };
   const finishBook=id=>update((n,g)=>finishInner(n,g,id),true);
+  const unstartBook=id=>update(n=>{ const r=rec(n,id); r.status="todo"; r.started=null; r.pages=0; r.notes=""; r.quotes=""; });
+  const unfinishBook=id=>update(n=>{ const r=rec(n,id); r.status="reading"; r.finished=null; });
   const saveField=(id,field,val)=>update(n=>{ const r=rec(n,id); r[field]=val; });
   const saveReflection=(id,val)=>update((n,g)=>{ const r=rec(n,id); r.reflection=val;
     if(val.trim()) give(n,g,"refl",XP.reflect,`＋${XP.reflect} XP — reflection saved`,r); });
@@ -809,7 +894,10 @@ export default function CanonQuest(){
     return (
       <div className="modalveil" onClick={()=>setOpenId(null)}>
         <div className="modal cq-paper" onClick={e=>e.stopPropagation()} role="dialog" aria-modal="true" aria-label={b.t}>
-          <button className="cq-btn sm ghost" style={{float:"right"}} onClick={()=>setOpenId(null)}>✕ Close</button>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:"1px solid rgba(60,50,30,.15)",marginBottom:14,paddingBottom:10}}>
+            <span className="cq-mono" style={{fontSize:10,letterSpacing:1.5,color:"#8a6a1f",textTransform:"uppercase"}}>Book detail</span>
+            <button className="cq-btn sm ghost" style={{padding:"6px 14px",fontSize:13,fontWeight:600}} onClick={()=>setOpenId(null)}>✕ Close</button>
+          </div>
           <div style={{display:"flex",gap:20,flexWrap:"wrap"}}>
             <Cover b={b} big/>
             <div style={{flex:1,minWidth:230}}>
@@ -844,7 +932,11 @@ export default function CanonQuest(){
             {status==="todo" && <button className="cq-btn solid" onClick={()=>startBook(b.id)}>Start reading — ＋{XP.start} XP</button>}
 
             {status==="reading" && <>
-              <div className="cq-eyebrow" style={{color:"#8a6a1f",marginBottom:6}}>Reading tracker · {rec.pages||0} / {b.p} pages ({Math.round((rec.pages||0)/b.p*100)}%)</div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6,flexWrap:"wrap",gap:6}}>
+                <div className="cq-eyebrow" style={{color:"#8a6a1f"}}>Reading tracker · {rec.pages||0} / {b.p} pages ({Math.round((rec.pages||0)/b.p*100)}%)</div>
+                <button className="cq-btn sm ghost" style={{fontSize:11,padding:"4px 10px",borderColor:"rgba(60,50,30,.3)",color:"#8a6a1f"}}
+                  onClick={()=>{ if(window.confirm("Remove this book from your reading list? Your notes will be cleared.")) unstartBook(b.id); }}>↩ Not started</button>
+              </div>
               <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",marginBottom:10}}>
                 <input className="cq-input" type="number" min="0" max={b.p} defaultValue={rec.pages||0} key={`pg-${b.id}-${rec.pages||0}`}
                   style={{width:110,background:"#fff",color:"#2a2418",borderColor:"rgba(60,50,30,.35)"}}
@@ -862,7 +954,11 @@ export default function CanonQuest(){
             </>}
 
             {status==="done" && <>
-              <div className="cq-eyebrow" style={{color:"#8a6a1f"}}>Finished {rec.finished||""} — well read.</div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4,flexWrap:"wrap",gap:6}}>
+                <div className="cq-eyebrow" style={{color:"#8a6a1f"}}>Finished {rec.finished||""} — well read.</div>
+                <button className="cq-btn sm ghost" style={{fontSize:11,padding:"4px 10px",borderColor:"rgba(60,50,30,.3)",color:"#8a6a1f"}}
+                  onClick={()=>unfinishBook(b.id)}>↩ Still reading</button>
+              </div>
               <div className="starrow" style={{margin:"6px 0 4px"}} role="radiogroup" aria-label="Your rating">
                 {[1,2,3,4,5].map(n=><button key={n} className={rec.rating>=n?"on":""} aria-label={`${n} stars`}
                   onClick={()=>saveField(b.id,"rating",n)}>★</button>)}
