@@ -372,14 +372,14 @@ function Motif({k,w,h,c}){
     case"waves":   return <>{[-s*.5,-s*.15,s*.15,s*.5].map((dy,i)=><path key={i} d={`M${x-s},${y+dy} C${x-s*.4},${y+dy-s*.22} ${x+s*.4},${y+dy+s*.22} ${x+s},${y+dy}`} {...p} strokeOpacity={.4+i*.15}/>)}</>;
     case"compass": return <><circle cx={x} cy={y} r={s} {...p}/><line x1={x} y1={y-s} x2={x} y2={y+s} {...p}/><line x1={x-s} y1={y} x2={x+s} y2={y} {...p}/><polygon points={`${x},${y-s*.55} ${x-s*.18},${y+s*.2} ${x},${y} ${x+s*.18},${y+s*.2}`} fill={c}/></>;
     case"leaf":    return <><path d={`M${x},${y+s} C${x-s},${y} ${x-s},${y-s} ${x},${y-s} C${x+s},${y-s} ${x+s},${y} ${x},${y+s}`} {...p}/><line x1={x} y1={y+s} x2={x} y2={y-s} {...p}/></>;
-    case"weave":   return <>{[0,1,2,3].map(i=><><line key={`a${i}`} x1={x-s+i*s*.67} y1={y-s} x2={x-s+i*s*.67} y2={y+s} {...p} strokeOpacity={.7}/><line key={`b${i}`} x1={x-s} y1={y-s+i*s*.67} x2={x+s} y2={y-s+i*s*.67} {...p} strokeOpacity={.4}/></>)}</>;
+    case"weave":   return <>{[[-s*.5,-s*.5],[s*.5,-s*.5],[-s*.5,s*.5],[s*.5,s*.5]].map(([dx,dy],i)=><circle key={i} cx={x+dx} cy={y+dy} r={s*.32} {...p} strokeOpacity={i%2===0?.9:.5}/>)}<line x1={x-s} y1={y} x2={x+s} y2={y} {...p} strokeOpacity={.35}/><line x1={x} y1={y-s} x2={x} y2={y+s} {...p} strokeOpacity={.35}/></>;
     case"flame":   return <path d={`M${x},${y+s} C${x-s*.5},${y} ${x-s*.3},${y-s*.4} ${x},${y-s} C${x+s*.2},${y-s*.5} ${x+s*.6},${y-s*.1} ${x+s*.4},${y+s*.3} C${x+s*.3},${y+s*.7} ${x},${y+s} ${x},${y+s}`} {...p}/>;
     case"crown":   return <polyline points={`${x-s},${y+s*.3} ${x-s},${y-s*.3} ${x-s*.5},${y+s*.1} ${x},${y-s*.6} ${x+s*.5},${y+s*.1} ${x+s},${y-s*.3} ${x+s},${y+s*.3}`} {...p}/>;
-    case"rays":    return <>{[0,30,60,90,120,150].map(a=><line key={a} x1={x} y1={y} x2={x+Math.cos(a*Math.PI/180)*s} y2={y+Math.sin(a*Math.PI/180)*s} {...p} strokeOpacity={.5+.5*(a%60===0?1:0)}/>)}</>;
+    case"rays":    return <>{[0,45,90,135].map(a=><><line key={`${a}a`} x1={x+Math.cos(a*Math.PI/180)*s*.15} y1={y+Math.sin(a*Math.PI/180)*s*.15} x2={x+Math.cos(a*Math.PI/180)*s} y2={y+Math.sin(a*Math.PI/180)*s} {...p}/><line key={`${a}b`} x1={x-Math.cos(a*Math.PI/180)*s*.15} y1={y-Math.sin(a*Math.PI/180)*s*.15} x2={x-Math.cos(a*Math.PI/180)*s} y2={y-Math.sin(a*Math.PI/180)*s} {...p}/></>)}<circle cx={x} cy={y} r={s*.13} fill={c}/></>;
     case"clash":   return <><line x1={x-s} y1={y-s} x2={x+s} y2={y+s} {...p}/><line x1={x+s} y1={y-s} x2={x-s} y2={y+s} {...p}/></>;
     case"scales":  return <><line x1={x} y1={y-s} x2={x} y2={y+s*.3} {...p}/><line x1={x-s*.8} y1={y-.1*s} x2={x+s*.8} y2={y-.1*s} {...p}/><path d={`M${x-s*.8},${y-.1*s} l${-s*.35},${s*.5} h${s*.7} Z`} {...p}/><path d={`M${x+s*.8},${y-.1*s} l${-s*.35},${s*.5} h${s*.7} Z`} {...p}/></>;
-    case"banner":  return <><rect x={x-s} y={y-s*.5} width={s*2} height={s*.5} {...p}/><rect x={x-s} y={y} width={s*2} height={s*.5} {...p} strokeOpacity={.6}/><rect x={x-s} y={y+s*.5} width={s*2} height={s*.35} {...p} strokeOpacity={.35}/></>;
-    case"lattice": return <>{[-1,0,1].flatMap(i=>[-1,0,1].map(j=><circle key={`${i}${j}`} cx={x+i*s*.5} cy={y+j*s*.5} r={s*.1} fill={c} opacity={.7}/>))}{[[-s,0],[s,0],[0,-s],[0,s]].map(([dx,dy],i)=><line key={i} x1={x} y1={y} x2={x+dx*.8} y2={y+dy*.8} {...p} strokeOpacity={.4}/>)}</>;
+    case"banner":  return <><polyline points={`${x-s*.7},${y-s} ${x-s*.7},${y+s*.5} ${x},${y+s*.15} ${x+s*.7},${y+s*.5} ${x+s*.7},${y-s} ${x-s*.7},${y-s}`} {...p}/><line x1={x-s*.7} y1={y} x2={x+s*.7} y2={y} {...p} strokeOpacity={.4}/></>;
+    case"lattice": return <>{[-1,0,1].flatMap(i=>[-1,0,1].map(j=><polygon key={`${i}${j}`} points={`${x+i*s*.5},${y+j*s*.5-s*.18} ${x+i*s*.5+s*.18},${y+j*s*.5} ${x+i*s*.5},${y+j*s*.5+s*.18} ${x+i*s*.5-s*.18},${y+j*s*.5}`} {...p} opacity={i===0&&j===0?1:.55}/>))}</>;
     case"columns": return <>{[-s*.5,-s*.17,s*.17,s*.5].map((dx,i)=><line key={i} x1={x+dx} y1={y-s} x2={x+dx} y2={y+s*.8} {...p}/>)}<line x1={x-s*.65} y1={y-s} x2={x+s*.65} y2={y-s} {...p}/><line x1={x-s*.65} y1={y+s*.8} x2={x+s*.65} y2={y+s*.8} {...p}/></>;
     case"coin":    return <><circle cx={x} cy={y} r={s} {...p}/><circle cx={x} cy={y} r={s*.65} {...p} strokeOpacity={.6}/></>;
     case"scroll":  return <><path d={`M${x-s*.3},${y-s} C${x-s*.7},${y-s} ${x-s*.7},${y+s} ${x-s*.3},${y+s} L${x+s*.3},${y+s} C${x+s*.7},${y+s} ${x+s*.7},${y-s} ${x+s*.3},${y-s} Z`} {...p}/>{[-s*.35,0,s*.35].map((dy,i)=><line key={i} x1={x-s*.4} y1={y+dy} x2={x+s*.4} y2={y+dy} {...p} strokeOpacity={.5}/>)}</>;
@@ -412,7 +412,7 @@ function Cover({b,big}){
       <Motif k={motif} w={w} h={h-h*.3} c={era.accent}/>
       <rect x="0" y={h-20} width={w} height={20} fill="rgba(0,0,0,.45)"/>
       <text x={w/2} y={h-6} textAnchor="middle" fontFamily="'IBM Plex Mono',monospace" fontSize={big?6.5:5.5} fill={era.hi} opacity=".85" letterSpacing="0.5">
-        {b.y<0?`${Math.abs(b.y)} BC`:b.y} · {b.a.split(" ").slice(-1)[0].toUpperCase()}
+        {b.y<0?`${Math.abs(b.y)} BC`:b.y} · {(()=>{const n=b.a.split(" ").slice(-1)[0].toUpperCase(); return n.length>8?n.slice(0,7)+"…":n;})()}
       </text>
     </svg>);
 }
@@ -896,7 +896,7 @@ export default function CanonQuest(){
         <div className="modal cq-paper" onClick={e=>e.stopPropagation()} role="dialog" aria-modal="true" aria-label={b.t}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:"1px solid rgba(60,50,30,.15)",marginBottom:14,paddingBottom:10}}>
             <span className="cq-mono" style={{fontSize:10,letterSpacing:1.5,color:"#8a6a1f",textTransform:"uppercase"}}>Book detail</span>
-            <button className="cq-btn sm ghost" style={{padding:"6px 14px",fontSize:13,fontWeight:600}} onClick={()=>setOpenId(null)}>✕ Close</button>
+            <button onClick={()=>setOpenId(null)} style={{background:"#2a2010",color:"#F1EADA",border:"none",borderRadius:4,padding:"7px 16px",fontFamily:"'IBM Plex Mono',monospace",fontSize:13,fontWeight:600,cursor:"pointer",letterSpacing:".5px"}}>✕ Close</button>
           </div>
           <div style={{display:"flex",gap:20,flexWrap:"wrap"}}>
             <Cover b={b} big/>
