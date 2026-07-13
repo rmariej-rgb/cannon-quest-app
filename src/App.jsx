@@ -555,6 +555,7 @@ export default function CanonQuest(){
     if(val.trim()) give(n,g,"refl",XP.reflect,`＋${XP.reflect} XP — reflection saved`,r); });
   const setPath=pid=>update(n=>{ n.path = n.path===pid?null:pid; });
   const setGoal=goal=>update(n=>{ n.goal = goal ? {...goal, setAt: todayStr()} : null; });
+  const resetProgress=()=>{ setSt(JSON.parse(JSON.stringify(EMPTY))); setOpenId(null); toast("The quest begins anew — all progress reset."); };
 
   /* recommendation engine */
   const nextRec=useMemo(()=>{
@@ -896,6 +897,17 @@ export default function CanonQuest(){
           Finish a book — ＋{XP.done} XP · Write a reflection — ＋{XP.reflect} XP<br/>
           Daily streak — up to ＋25 XP per day of momentum
         </div>
+      </div>
+
+      <div className="cq-rule"><h2>Start over</h2></div>
+      <div className="cq-card" style={{padding:18}}>
+        <p style={{fontSize:13.5,color:"var(--muted-text)",lineHeight:1.55,margin:"0 0 12px"}}>
+          Reset the entire quest — every book returns to unread, and your XP, level, streak, badges, path, and goal are cleared. This cannot be undone.
+        </p>
+        <button className="cq-btn sm" style={{borderColor:"var(--oxblood)",color:"#D99",background:"rgba(142,75,63,.12)"}}
+          onClick={()=>{ if(window.confirm("Reset ALL progress? Every book, all XP, your level, streak, and badges will be wiped. This cannot be undone.")) resetProgress(); }}>
+          Reset all progress
+        </button>
       </div>
     </div>);
 
