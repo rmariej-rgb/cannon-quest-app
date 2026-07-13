@@ -535,8 +535,21 @@ export default function CanonQuest(){
     r.status="done"; r.pages=b.p; r.finished=r.finished||todayStr(); r.started=r.started||todayStr();
     give(n,g,"done",XP.done,`＋${XP.done} XP — finished “${b.t}”!`,r); };
   const finishBook=id=>update((n,g)=>finishInner(n,g,id),true);
-  const unstartBook=id=>update(n=>{ const r=rec(n,id); r.status="todo"; r.started=null; r.pages=0; r.notes=""; r.quotes=""; });
-  const unfinishBook=id=>update(n=>{ const r=rec(n,id); r.status="reading"; r.finished=null; });
+  const refundXP=(n,r)=>{ // subtract all XP this book awarded, then clear its award ledger
+    const map={start:XP.start,q25:XP.q25,q50:XP.q50,done:XP.done,refl:XP.reflect};
+    let refunded=0;
+    for(const k in (r.aw||{})){ if(map[k]){ refunded+=map[k]; } }
+    n.xp=Math.max(0,n.xp-refunded);
+    r.aw={};
+  };
+  const unstartBook=id=>update(n=>{ const r=rec(n,id); refundXP(n,r); r.status="todo"; r.started=null; r.pages=0; r.notes=""; r.quotes=""; r.reflection=""; r.rating=0; r.finished=null; });
+  const unfinishBook=id=>update(n=>{ const r=rec(n,id);
+    // refund only the finish + reflection XP; keep start/25%/50% since it stays "reading"
+    let refunded=0;
+    if(r.aw?.done){ refunded+=XP.done; delete r.aw.done; }
+    if(r.aw?.refl){ refunded+=XP.reflect; delete r.aw.refl; }
+    n.xp=Math.max(0,n.xp-refunded);
+    r.status="reading"; r.finished=null; r.reflection=""; });
   const saveField=(id,field,val)=>update(n=>{ const r=rec(n,id); r[field]=val; });
   const saveReflection=(id,val)=>update((n,g)=>{ const r=rec(n,id); r.reflection=val;
     if(val.trim()) give(n,g,"refl",XP.reflect,`＋${XP.reflect} XP — reflection saved`,r); });
@@ -1001,13 +1014,13 @@ export default function CanonQuest(){
           {TABS.map(([id,label])=>
             <button key={id} className={`cq-tab${tab===id?" active":""}`} onClick={()=>setTab(id)}>{label}</button>)}
         </nav>
-        {tab==="study"&&<Study/>}
-        {tab==="library"&&<Library/>}
-        {tab==="paths"&&<Paths/>}
-        {tab==="timeline"&&<Timeline/>}
-        {tab==="honors"&&<Honors/>}
+        {tab==="study"&&Study()}
+        {tab==="library"&&Library()}
+        {tab==="paths"&&Paths()}
+        {tab==="timeline"&&Timeline()}
+        {tab==="honors"&&Honors()}
       </div>
-      {openId!==null && <BookDetail/>}
+      {openId!==null && BookDetail()}
       <Toasts items={toasts}/>
     </div>);
 }
