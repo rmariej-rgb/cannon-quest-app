@@ -78,10 +78,10 @@ body{margin:0}
 .dots{display:inline-flex;gap:2.5px;vertical-align:middle}
 .dots i{width:6px;height:6px;border-radius:50%;background:rgba(237,230,211,.15)}
 .dots i.f{background:var(--gilt)}
-.cq-select,.cq-input{background:#1A2620;border:1px solid rgba(200,162,75,.25);color:var(--cream-text);font-family:'IBM Plex Mono';font-size:12px;border-radius:3px;padding:8px 10px}
+.cq-select,.cq-input{background:#1A2620;border:1px solid rgba(200,162,75,.25);color:var(--cream-text);font-family:'IBM Plex Mono';font-size:16px;border-radius:3px;padding:8px 10px}
 .cq-input::placeholder{color:var(--muted-text)}
-textarea.cq-input{font-family:'Spectral';font-size:14px;line-height:1.5;width:100%}
-.modalveil{position:fixed;inset:0;background:rgba(8,12,10,.75);backdrop-filter:blur(3px);z-index:60;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:30px 14px}
+textarea.cq-input{font-family:'Spectral';font-size:16px;line-height:1.5;width:100%}
+.modalveil{position:fixed;inset:0;background:rgba(8,12,10,.75);backdrop-filter:blur(3px);z-index:60;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:calc(16px + env(safe-area-inset-top)) 14px calc(30px + env(safe-area-inset-bottom))}
 .modal{max-width:720px;width:100%;margin:auto;animation:rise .3s ease}
 @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 .toaststack{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:90;display:flex;flex-direction:column;gap:8px;align-items:center}
@@ -103,7 +103,7 @@ textarea.cq-input{font-family:'Spectral';font-size:14px;line-height:1.5;width:10
 .qbtn:hover{border-color:var(--gilt)}
 .qbtn .qt{font-family:'Fraunces';font-size:15.5px;color:var(--gilt);font-weight:500}
 .qbtn .qd{font-size:12.5px;color:var(--muted-text);margin-top:3px}
-.starrow button{background:none;border:none;font-size:22px;cursor:pointer;color:rgba(237,230,211,.25);padding:2px}
+.starrow button{background:none;border:none;font-size:28px;cursor:pointer;color:rgba(60,50,30,.28);padding:2px 4px}
 .starrow button.on{color:var(--gilt)}
 @media(max-width:640px){ .cq-wrap{padding:0 12px calc(80px + env(safe-area-inset-bottom))} .cq-brand small{display:none} .bookcard{padding:12px} }
 @media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important} }
@@ -458,6 +458,13 @@ export default function CanonQuest(){
   const [openId,setOpenId]=useState(null);
   const [toasts,setToasts]=useState([]);
   const tk=useRef(0), prevAch=useRef(null), saveT=useRef(null);
+
+  /* lock viewport scale — stops iOS zooming in on inputs and never resetting */
+  useEffect(()=>{
+    let m=document.querySelector('meta[name="viewport"]');
+    if(!m){ m=document.createElement("meta"); m.name="viewport"; document.head.appendChild(m); }
+    m.setAttribute("content","width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover");
+  },[]);
 
   /* load / save via persistent storage */
   useEffect(()=>{(async()=>{
